@@ -85,6 +85,7 @@ public class MoveMent : MonoBehaviour
         float scale;
         if (!attachTo)
         {
+            dashable = true;
             attachTo = true;
             originVelocity = rb.gravityScale;
             rb.gravityScale = 0;
