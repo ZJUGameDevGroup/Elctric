@@ -8,7 +8,8 @@ public class MoveMent : MonoBehaviour
     private Collider2D coll;
     private Animator anim;
     //速度，跳跃力度
-    public float speed, jumpForce;
+    public float speed;
+    // public float jumpForce;
     private float horizontalMove;
     private float verticalMove;
     [Header("地面检测")]
@@ -17,11 +18,13 @@ public class MoveMent : MonoBehaviour
     public LayerMask ground;
     public float checkGroundRadius;
     [Header("Dash参数")]
+    public float dashUDSpeed;
+    public float dashLRSpeed;
     public float dashTime;//dash时长
     private float dashTimeLeft;//冲锋剩余时间
     private float lastDash = -10f;//上一次dash时间点
     public float dashCoolDown;
-    public float dashSpeed;
+    // public float dashSpeed;
     private bool dashable;
     [Header("Attach")]
     [ReadOnly]
@@ -30,9 +33,10 @@ public class MoveMent : MonoBehaviour
     float originVelocity;
     ElecItem attachedObject;
     [Header("Movement")]
-    public bool isGround, isJump, isDashing;
-    bool jumpPressed;
-    int jumpCount;
+    public bool isGround, isDashing;
+    // public bool isJump;
+    // bool jumpPressed;
+    // int jumpCount;
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
@@ -43,10 +47,10 @@ public class MoveMent : MonoBehaviour
     {
         if (!attachTo)
         {
-            if (Input.GetButtonDown("Jump") && jumpCount > 0)
-            {
-                jumpPressed = true;
-            }
+            // if (Input.GetButtonDown("Jump") && jumpCount > 0)
+            // {
+            //     jumpPressed = true;
+            // }
             if (Input.GetKeyDown(KeyCode.J))
             {
                 if (dashable && Time.time >= (lastDash + dashCoolDown))
@@ -145,7 +149,7 @@ public class MoveMent : MonoBehaviour
         if (!attachTo)
         {
             GroundMovement();
-            Jump();
+            // Jump();
             Dash();
         }
         else
@@ -192,15 +196,16 @@ public class MoveMent : MonoBehaviour
             if (dashTimeLeft > 0)
             {
 
-                if (!isGround)
-                {
-                    rb.velocity = new Vector2(dashSpeed * horizontalMove, jumpForce * verticalMove);//在空中Dash向上
-                }
-                else if(isGround)
-                {
-                    rb.velocity = new Vector2(dashSpeed * (horizontalMove + gameObject.transform.localScale.x) / 2, rb.velocity.y);//地面Dash
-                }
+                // if (!isGround)
+                // {
+                //     rb.velocity = new Vector2(dashSpeed * horizontalMove, jumpForce * verticalMove);//在空中Dash向上
+                // }
+                // else if(isGround)
+                // {
+                //     rb.velocity = new Vector2(dashSpeed * (horizontalMove + gameObject.transform.localScale.x) / 2, rb.velocity.y);//地面Dash
+                // }
 
+                rb.velocity = new Vector2(dashLRSpeed * horizontalMove, dashUDSpeed * verticalMove);//在空中Dash向上
 
                 dashTimeLeft -= Time.deltaTime;
 
@@ -231,25 +236,25 @@ public class MoveMent : MonoBehaviour
 
         }
     }
-    void Jump()//跳跃
-    {
-        if (isGround)
-        {
-            jumpCount = 2;//可跳跃数量
-            isJump = false;
-        }
-        if (jumpPressed && isGround)
-        {
-            isJump = true;
-            rb.velocity = new Vector2(rb.velocity.x, jumpForce);
-            jumpCount--;
-            jumpPressed = false;
-        }
-        else if (jumpPressed && jumpCount > 0 && isJump)
-        {
-            rb.velocity = new Vector2(rb.velocity.x, jumpForce);
-            jumpCount--;
-            jumpPressed = false;
-        }
-    }
+    // void Jump()//跳跃
+    // {
+    //     if (isGround)
+    //     {
+    //         jumpCount = 2;//可跳跃数量
+    //         isJump = false;
+    //     }
+    //     if (jumpPressed && isGround)
+    //     {
+    //         isJump = true;
+    //         rb.velocity = new Vector2(rb.velocity.x, jumpForce);
+    //         jumpCount--;
+    //         jumpPressed = false;
+    //     }
+    //     else if (jumpPressed && jumpCount > 0 && isJump)
+    //     {
+    //         rb.velocity = new Vector2(rb.velocity.x, jumpForce);
+    //         jumpCount--;
+    //         jumpPressed = false;
+    //     }
+    // }
 }

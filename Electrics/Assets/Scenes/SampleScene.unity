@@ -468,19 +468,18 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   speed: 20
-  jumpForce: 25
   groundCheck: {fileID: 386747639}
   ground:
     serializedVersion: 2
     m_Bits: 64
   checkGroundRadius: 0.1
+  dashUDSpeed: 30
+  dashLRSpeed: 100
   dashTime: 0.1
   dashCoolDown: 0
-  dashSpeed: 100
   attachTo: 0
   checkRadius: 1
   isGround: 0
-  isJump: 0
   isDashing: 0
 --- !u!61 &19778298
 BoxCollider2D:
