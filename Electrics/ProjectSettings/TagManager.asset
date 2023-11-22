@@ -1,0 +1,60 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!78 &1
+TagManager:
+  serializedVersion: 2
+  tags:
+  - Ground
+  - player
+  layers:
+  - Default
+  - TransparentFX
+  - Ignore Raycast
+  - Insulator
+  - Water
+  - UI
+  - Ground
+  - player
+  - conductor
+  - ElecItem
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  m_SortingLayers:
+  - name: Default
+    uniqueID: 0
+    locked: 0
+  - name: Ui
+    uniqueID: 2785232041
+    locked: 0
+  - name: Appliance
+    uniqueID: 2112973613
+    locked: 0
+  - name: Insulator
+    uniqueID: 3463278569
+    locked: 0
+  - name: Conductor
+    uniqueID: 917042357
+    locked: 0
+  - name: Player
+    uniqueID: 1644889719
+    locked: 0
