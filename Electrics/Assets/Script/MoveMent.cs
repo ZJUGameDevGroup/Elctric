@@ -45,21 +45,20 @@ public class MoveMent : MonoBehaviour
     }
     void Update()
     {
-        if (!attachTo)
+
+        // if (Input.GetButtonDown("Jump") && jumpCount > 0)
+        // {
+        //     jumpPressed = true;
+        // }
+        if (Input.GetKeyDown(KeyCode.J))
         {
-            // if (Input.GetButtonDown("Jump") && jumpCount > 0)
-            // {
-            //     jumpPressed = true;
-            // }
-            if (Input.GetKeyDown(KeyCode.J))
+            if (dashable && Time.time >= (lastDash + dashCoolDown))
             {
-                if (dashable && Time.time >= (lastDash + dashCoolDown))
-                {
-                    //可以执行dash
-                    ReadyToDash();
-                }
+                //可以执行dash
+                ReadyToDash();
             }
         }
+
         if (Input.GetKeyUp(KeyCode.Z))
         {
             Debug.Log("Z");
@@ -150,12 +149,12 @@ public class MoveMent : MonoBehaviour
         {
             GroundMovement();
             // Jump();
-            Dash();
         }
         else
         {
             MoveTogether();
         }
+        Dash();
     }
     void MoveTogether()
     {
@@ -193,6 +192,13 @@ public class MoveMent : MonoBehaviour
     {
         if (isDashing)
         {
+            if (attachedObject != null && attachTo)
+            {
+                attachedObject.ChangeChaged();
+                Collider2D nearest = attachedObject.GetComponent<Collider2D>();
+                StartCoroutine(EnterItem(nearest));
+                attachedObject = null;
+            }
             if (dashTimeLeft > 0)
             {
 
