@@ -235,8 +235,8 @@ public class MoveMent : MonoBehaviour
     {
         horizontalMove = Input.GetAxisRaw("Horizontal");
         verticalMove = Input.GetAxisRaw("Vertical");
+        Debug.Log("Horizontal:" + horizontalMove + "Vertical:" + verticalMove);
         rb.velocity = new Vector2(horizontalMove * speed, rb.velocity.y);
-
         if (horizontalMove != 0)
         {
             transform.localScale = new Vector3(horizontalMove, 1, 1);
