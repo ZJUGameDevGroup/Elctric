@@ -1,363 +1,508 @@
-using System;
 using System.Collections;
 using UnityEngine;
-class Character : MonoBehaviour
+[CreateAssetMenu(fileName = "Data", menuName = "ScriptableObjects/CharacterImp", order = 1)]
+public class CharacterImp : ScriptableObject
+{
+    [Header("人物移动属性")]
+    public float dashXSpeed;
+    public float dashYSpeed;
+    public float dashTime;
+    public float moveXSpeed;
+}
+public interface ICharacter : IMove, IForce, IElecPower<IElecUser<ICharacter>>, IAttachTo<IAttachedBy<ICharacter>>
+{
+    Collider2D Collider2D
+    {
+        get; set;
+    }
+    Rigidbody2D Rigidbody2D
+    {
+        get; set;
+    }
+    Transform Transform
+    {
+        get;
+    }
+    CharacterImp CharacterImp
+    {
+        get; set;
+    }
+    Coroutine StartCoroutine(IEnumerator routine);
+}
+class Character : MonoBehaviour, ICharacter
 {
     public Rigidbody2D rb;
     public Collider2D coll;
-    [Header("角色属性")]
-    //移动速度
-    public float moveSpeed;
-    //上下冲刺速度
-    public float DashUDSpeed;
-    //左右冲刺速度
-    public float DashLRSpeed;
-    //冲刺时间
-    public float dashTime;
-
-    //状态机
-    Context context;
-
-    private void Awake()
+    public CharacterImp characterImp;
+    private IAttachedBy<ICharacter> attachedItem;
+    private IElecUser<ICharacter> elecUser;
+    public Rigidbody2D Rigidbody2D
     {
-        if (rb == null)
+        get => rb;
+        set => rb = value;
+    }
+    public Collider2D Collider2D
+    {
+        get => coll;
+        set => coll = value;
+    }
+    public Collider2D AttachableColl
+    {
+        get => coll;
+        set => coll = value;
+    }
+    public Transform Transform
+    {
+        get => transform;
+    }
+    public CharacterImp CharacterImp
+    {
+        get => characterImp;
+        set => characterImp = value;
+    }
+    public IAttachedBy<ICharacter> AttachedItem
+    {
+        get => attachedItem;
+        set => attachedItem = value;
+    }
+    public IElecUser<ICharacter> ElecUser
+    {
+        get => elecUser;
+        set => elecUser = value;
+    }
+    public void Move(float horizontal, float horizontalSpeed, float vertical, float verticalSpeed)
+    {
+        Debug.Log("Character Move");
+        rb.velocity = new Vector2(horizontal * horizontalSpeed, vertical * verticalSpeed);
+    }
+    public void Force(Vector2 right, float rightForce, Vector2 up, float upForce)
+    {
+        Debug.Log("Character Force");
+        rb.AddRelativeForce(rightForce * right + upForce * up);
+    }
+    public new Coroutine StartCoroutine(IEnumerator routine)
+    {
+        Debug.Log("Character StartCoroutine");
+        return base.StartCoroutine(routine);
+    }
+    public void SetAttachedItem(IAttachedBy<ICharacter> attachedItem)
+    {
+        Debug.Log("Character SetAttachedItem");
+        AttachedItem = attachedItem;
+    }
+    public void SetElecUser(IElecUser<ICharacter> elecUser)
+    {
+        Debug.Log("Character SetAttachedItem");
+        ElecUser = elecUser;
+    }
+    public void PowerOn()
+    {
+        Debug.Log("Character PowerOn");
+        if (ElecUser != null)
         {
-            rb = gameObject.AddComponent<Rigidbody2D>();
-            //取消阻力
-            rb.drag = 0;
-            //取消重力
-            rb.gravityScale = 0;
+            ElecUser.Open();
         }
-        if (coll == null)
+    }
+    public void PowerOff()
+    {
+        Debug.Log("Character PowerOff");
+        if (ElecUser != null)
         {
-            coll = gameObject.AddComponent<BoxCollider2D>();
+            ElecUser.Close();
         }
-    }
-
-    private void Start()
-    {
-        context = new Context(new OnGround());
-    }
-    private void Update()
-    {
-
-    }
-
-    private void FixedUpdate()
-    {
-        context.Handler(this);
     }
 }
-abstract class Actor
+
+
+
+class UnAttached : IState<ICharacter>
 {
-    public abstract void Act(Character character);
-}
-class MoveActor : Actor
-{
+    public float checkOffset = 0.1f;
+    private ICharacter character;
     private float horizontal;
     private float vertical;
-    private float horizontalSpeed;
-    private float verticalSpeed;
-    public MoveActor(float horizontal, float horizontalSpeed, float vertical, float verticalSpeed)
+    private Vector2 checkMaxRU;
+    private Vector2 checkMaxLU;
+    private Vector2 checkMaxRD;
+    private Vector2 checkMinLU;
+    private Vector2 checkMinLD;
+    private Vector2 checkMinRD;
+    public ICharacter BaseObject
     {
-        this.horizontal = horizontal;
-        this.vertical = vertical;
-        this.horizontalSpeed = horizontalSpeed;
-        this.verticalSpeed = verticalSpeed;
+        get => character;
+        set => character = value;
     }
-    public override void Act(Character character)
+    public UnAttached(ICharacter character)
     {
-        //改变速度
-        character.rb.velocity = new Vector2(horizontal * horizontalSpeed, vertical * verticalSpeed);
-        //改变朝向
-        if (horizontal != 0)
+        BaseObject = character;
+    }
+    public void Enter()
+    {
+        Debug.Log("Enter UnAttached");
+    }
+    public IState<ICharacter> Handler()
+    {
+        Debug.Log("Handler UnAttached");
+        horizontal = Input.GetAxis("Horizontal");
+        vertical = Input.GetAxis("Vertical");
+        if (Input.GetKeyDown(KeyCode.Z))
         {
-            character.transform.localScale = new Vector3(horizontal, 1, 1);
-        }
-    }
-}
-
-class ForceActor : Actor
-{
-    private float rightForce;
-    private float upForce;
-    private Vector2 right;
-    private Vector2 up;
-    public ForceActor(Vector2 right, float rightForce, Vector2 up, float upForce)
-    {
-        this.up = up;
-        this.right = right;
-        this.upForce = upForce;
-        this.rightForce = rightForce;
-    }
-    public override void Act(Character character)
-    {
-        //施加外力
-        character.rb.AddRelativeForce(rightForce * right + upForce * up);
-        //改变朝向
-        if (right != Vector2.zero)
-        {
-            character.transform.localScale = new Vector3(right.x, right.y, 1);
-        }
-    }
-}
-
-abstract class Command
-{
-    public abstract void Handle(Character character);
-}
-class MoveCommand : Command
-{
-    Actor moveActor;
-    public MoveCommand(float horizontal, float horizontalSpeed, float vertical, float verticalSpeed)
-    {
-        moveActor = new MoveActor(horizontal, horizontalSpeed, vertical, verticalSpeed);
-    }
-    public override void Handle(Character character)
-    {
-        moveActor.Act(character);
-    }
-}
-class ForceCommand : Command
-{
-    Actor forceActor;
-    public ForceCommand(Vector2 right, float rightForce, Vector2 up, float upForce)
-    {
-        forceActor = new ForceActor(right, rightForce, up, upForce);
-    }
-    public override void Handle(Character character)
-    {
-        forceActor.Act(character);
-    }
-}
-class Context
-{
-    public State state;
-    public State State
-    {
-        get => state;
-        set => state = value;
-    }
-    public Context(State state)
-    {
-        this.state = state;
-    }
-    public void Enter(Character character)
-    {
-        state.Enter(character);
-    }
-    public void Handler(Character character)
-    {
-        State _state = state.Handler(character);
-        if (_state != null)
-        {
-            state.Leave(character);
-            state = _state;
-            state.Enter(character);
-        }
-    }
-    public void Leave(Character character)
-    {
-        state.Leave(character);
-    }
-}
-abstract class State
-{
-    public abstract void Enter(Character character);
-    public abstract State Handler(Character character);
-    public abstract void Leave(Character character);
-}
-class UnAttached : State
-{
-    float checkRadius = 15.0f;
-    string checkMask = "EleItem";
-    public override void Enter(Character character)
-    {
-
-    }
-    public override State Handler(Character character)
-    {
-        if (Input.GetKeyUp(KeyCode.Z))
-        {
-            Debug.Log("UnAttached.Handler.Z");
-            return CheckAttachableItem(character);
-        }
-        return null;
-    }
-    public override void Leave(Character character)
-    {
-
-    }
-    private State CheckAttachableItem(Character character)
-    {
-        Collider2D nearest;
-        Collider2D[] Items = Physics2D.OverlapCircleAll(character.transform.position, checkRadius, LayerMask.GetMask(checkMask));
-        if (Items.Length > 0)
-        {
-            nearest = getNearestIndex(character.transform.position, Items);
-            GameObject attachedObject = nearest.GetComponent<GameObject>();
-            return new Attached(attachedObject);
-        } 
-        return null;
-    }
-    private Collider2D getNearestIndex(Vector2 centerPos, Collider2D[] Items)
-    {
-        Collider2D nearest = Items[0];
-        float distance = Vector2.Distance(centerPos, Items[0].transform.position);
-        float newDistance;
-        for (int i = 0; i < Items.Length; i++)
-        {
-            newDistance = Vector2.Distance(centerPos, Items[0].transform.position);
-            if (newDistance < distance)
+            IAttachedBy<ICharacter> attachedItem = FindAttachableItem();
+            if (attachedItem != null)
             {
-                nearest = Items[i];
-                distance = newDistance;
+                //建立连接
+                BaseObject.SetAttachedItem(attachedItem);
+                BaseObject.AttachedItem.SetAttachable(BaseObject);
+                //建立用电关系
+                IElecUser<ICharacter> elecUser = attachedItem.AttachedColl.GetComponent<IElecUser<ICharacter>>();
+                if (elecUser != null)
+                {
+                    BaseObject.SetElecUser(elecUser);
+                    BaseObject.ElecUser.SetElecPower(BaseObject);
+                }
+                //返回附着状态
+                return new Attached(BaseObject);
+            }
+        }
+        return null;
+    }
+    public void Leave()
+    {
+        Debug.Log("Leave UnAttached");
+    }
+    private IAttachedBy<ICharacter> FindMinAttachedItem(Vector2 pointA, Vector2 pointB)
+    {
+        Collider2D[] colliders = new Collider2D[0];
+        colliders = Physics2D.OverlapAreaAll(pointA, pointB);
+        float minDistance = Mathf.Infinity;
+        float distance;
+        IAttachedBy<ICharacter> nearest = null;
+        foreach (Collider2D collider in colliders)
+        {
+            IAttachedBy<ICharacter> attachedItem = collider.GetComponent<IAttachedBy<ICharacter>>();
+            if (attachedItem != null)
+            {
+                distance = Vector2.Distance(BaseObject.Collider2D.bounds.center, collider.bounds.center);
+                if (distance < minDistance)
+                {
+                    nearest = attachedItem;
+                    minDistance = distance;
+                }
             }
         }
         return nearest;
     }
-}
-class Attached : State
-{
-    public GameObject attachedObject;
-    float originGravityScale;
-    int countFrames;
-    float delta;
-    Vector3 deltaScale;
-
-    public Attached(GameObject gameObject)
+    private IAttachedBy<ICharacter> FindAttachableItem()
     {
-        attachedObject = gameObject;
-        countFrames = 15;
-        delta = 1.0f / (float)countFrames;
-        deltaScale = new Vector3(delta, delta, delta);
-    }
-    public override void Enter(Character character)
-    {
-        //记录重力
-        originGravityScale = character.rb.gravityScale;
-        //重力置为0
-        character.rb.gravityScale = 0.0f;
-        //速度置为0
-        character.rb.velocity = Vector2.zero;
-        //播放进入动画
-        character.StartCoroutine(EnterAnimation(character));
-
-    }
-    public override State Handler(Character character)
-    {
-        if (Input.GetKeyUp(KeyCode.Z))
+        Debug.Log("FindAttachableItem");
+        CalCulateCheckArea();
+        IAttachedBy<ICharacter> nearest = null;
+        if (horizontal >= 0)
         {
-            return new UnAttached();
+            Debug.Log("checkMaxRU:" + checkMaxRU + ", checkMinRD:" + checkMinRD);
+            nearest = FindMinAttachedItem(checkMaxRU, checkMinRD); // 1 5
+            if (nearest != null)
+                return nearest;
+        }
+        if (horizontal <= 0)
+        {
+            Debug.Log("checkMaxLU:" + checkMaxLU + ", checkMinLD:" + checkMinLD);
+            nearest = FindMinAttachedItem(checkMaxLU, checkMinLD); // 2 4
+            if (nearest != null)
+                return nearest;
+        }
+        if (vertical >= 0)
+        {
+            Debug.Log("checkMaxRU:" + checkMaxRU + ", checkMinLU:" + checkMinLU);
+            nearest = FindMinAttachedItem(checkMaxRU, checkMinLU); // 1 3
+            if (nearest != null)
+                return nearest;
+        }
+        if (vertical <= 0)
+        {
+            Debug.Log("checkMaxRD:" + checkMaxRD + ", checkMinLD:" + checkMinLD);
+            nearest = FindMinAttachedItem(checkMaxRD, checkMinLD);// 6 4
+            if (nearest != null)
+                return nearest;
         }
         return null;
     }
-    public override void Leave(Character character)
+    private void CalCulateCheckArea()
     {
-        //恢复重力
-        character.rb.gravityScale = originGravityScale;
-        //播放退出动画
-        character.StartCoroutine(LeaveAnimation(character));
+        Bounds collBounds = BaseObject.Collider2D.bounds;
+        checkMaxRU = new Vector2(collBounds.max.x + checkOffset, collBounds.max.y + checkOffset); // 1
+        checkMaxLU = new Vector2(collBounds.min.x, collBounds.max.y + checkOffset); // 2
+        checkMinLU = new Vector2(collBounds.min.x - checkOffset, collBounds.max.y); // 3
+
+        checkMinLD = new Vector2(collBounds.min.x - checkOffset, collBounds.min.y - checkOffset); // 4
+        checkMinRD = new Vector2(collBounds.max.x, collBounds.min.y - checkOffset); // 5
+        checkMaxRD = new Vector2(collBounds.max.x + checkOffset, collBounds.min.y); // 6
     }
-    private IEnumerator EnterAnimation(Character character)
+}
+class Attached : IState<ICharacter>
+{
+    private float originGravityScale;
+    public float countFrames = 15.0f;
+    public float checkRediums;
+    public float leaveOffset = 0.1f;
+    private Vector3 leaveCenter;
+    private Bounds preBounds;
+
+    private float horizontal;
+    private float vertical;
+
+    private ICharacter character;
+    public ICharacter BaseObject
+    {
+        get => character;
+        set => character = value;
+    }
+    public Attached(ICharacter character)
+    {
+        BaseObject = character;
+    }
+    public void Enter()
+    {
+        Debug.Log("Enter Attached");
+        //记录重力
+        originGravityScale = character.Rigidbody2D.gravityScale;
+        //记录初始碰撞体积
+        preBounds = character.Collider2D.bounds;
+        //重力置为0
+        character.Rigidbody2D.gravityScale = 0.0f;
+        //速度置为0
+        character.Rigidbody2D.velocity = Vector2.zero;
+        //取消碰撞体积
+        character.Collider2D.enabled = false;
+        //播放进入动画
+        character.StartCoroutine(EnterAnimation());
+    }
+    public IState<ICharacter> Handler()
+    {
+        horizontal = Input.GetAxis("Horizontal");
+        vertical = Input.GetAxis("Vertical");
+        if (Input.GetKeyDown(KeyCode.J))
+        {
+            if (UnAttachable())
+            {
+                //设置用电器关闭
+                BaseObject.PowerOff();
+                //取消用电关系
+                BaseObject.ElecUser.SetElecPower(null);
+                BaseObject.SetElecUser(null);
+                //取消连接
+                BaseObject.AttachedItem.SetAttachable(null);
+                BaseObject.SetAttachedItem(null);
+                //返回冲刺状态
+                return new Dash(BaseObject, horizontal, vertical);
+            }
+        }
+        if (Input.GetKeyDown(KeyCode.C))
+        {
+            //设置用电器开启
+            BaseObject.PowerOn();
+        }
+        return null;
+    }
+    public void Leave()
+    {
+        Debug.Log("Leave Attached");
+        //播放退出动画
+        character.StartCoroutine(LeaveAnimation());
+        //恢复重力
+        character.Rigidbody2D.gravityScale = originGravityScale;
+        //恢复碰撞体积
+        character.Collider2D.enabled = true;
+    }
+    private bool UnAttachable()
+    {
+        Bounds bounds = BaseObject.AttachedItem.AttachedColl.bounds;
+        float xOffset = preBounds.extents.x + BaseObject.AttachedItem.AttachedColl.bounds.extents.x + leaveOffset;
+        float yOffset = preBounds.extents.y + BaseObject.AttachedItem.AttachedColl.bounds.extents.y + leaveOffset;
+        float xDir = horizontal;
+        float yDir = vertical;
+        xDir = xDir > 0 ? 1.0f : xDir;
+        xDir = xDir < 0 ? -1.0f : xDir;
+        yDir = yDir > 0 ? 1.0f : yDir;
+        yDir = yDir < 0 ? -1.0f : yDir;
+        leaveCenter = new Vector3(bounds.center.x + xOffset * xDir, bounds.center.y + yOffset * yDir, bounds.center.z);
+        Vector2 checkMax = new Vector2(leaveCenter.x + preBounds.extents.x, leaveCenter.y + preBounds.extents.y);
+        Vector2 checkMin = new Vector2(leaveCenter.x - preBounds.extents.x, leaveCenter.y - preBounds.extents.y);
+        Debug.Log("xDir:" + xDir + "yDir:" + yDir);
+        Debug.Log("xOffset:" + xOffset + "yOffset:" + yOffset);
+        Debug.Log("LeaveCenter:" + leaveCenter);
+        Debug.Log("checkMax:" + checkMax + "checkMin:" + checkMin);
+        Collider2D[] colls = new Collider2D[0];
+        //方形检测
+        // colls = Physics2D.OverlapAreaAll(checkMax, checkMin);
+        //圆形检测
+        checkRediums = Mathf.Max(preBounds.extents.x, preBounds.extents.y);
+        colls = Physics2D.OverlapCircleAll((checkMax + checkMin) / 2, checkRediums);
+        //隔板不能穿过
+        foreach (Collider2D collider in colls)
+        {
+            ISeptum septum = collider.GetComponent<ISeptum>();
+            if (septum != null)
+            {
+                return false;
+            }
+        }
+        //地面不能穿过
+        foreach (Collider2D collider in colls)
+        {
+            IGround ground = collider.GetComponent<IGround>();
+            if (ground != null)
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+    private IEnumerator EnterAnimation()
     {
         Debug.Log("EnterAnimation");
-        Vector3 deltaDistance = (attachedObject.transform.position - character.transform.position) / countFrames;
+        float delta = 1.0f / countFrames;
+        Vector3 deltaScale = new Vector3(delta, delta, delta);
+        Vector3 deltaDistance = (BaseObject.AttachedItem.AttachedColl.bounds.center - character.Collider2D.bounds.center) / countFrames;
         for (int i = 0; i < countFrames; i++)
         {
-            character.transform.position += deltaDistance;
-            character.transform.localScale -= deltaScale;
+            character.Transform.position += deltaDistance;
+            character.Transform.localScale -= deltaScale;
             yield return new WaitForFixedUpdate();
         }
     }
-    private IEnumerator LeaveAnimation(Character character)
+    private IEnumerator LeaveAnimation()
     {
         Debug.Log("LeaveAnimation");
+        float delta = 1.0f / countFrames;
+        Vector3 deltaScale = new Vector3(delta, delta, delta);
+        character.Transform.position = leaveCenter;
         for (int i = 0; i < countFrames; i++)
         {
-            character.transform.localScale += deltaScale;
+            character.Transform.localScale += deltaScale;
             yield return new WaitForFixedUpdate();
         }
     }
 }
-class OnGround : UnAttached
+class Stop : UnAttached, IState<ICharacter>
+{
+    public IMoveCommand stopMoveCommand;
+    float groundCheckRadius = 0.1f;
+    public Stop(ICharacter character) : base(character)
+    {
+    }
+    public new void Enter()
+    {
+        base.Enter();
+        Debug.Log("Enter Stop");
+        stopMoveCommand = new MoveCommand(BaseObject, 0.0f, 0.0f, 0.0f, 0.0f);
+        stopMoveCommand.Handle();
+    }
+    public new IState<ICharacter> Handler()
+    {
+        IState<ICharacter> baseHandler = base.Handler();
+        if (baseHandler != null)
+        {
+            return baseHandler;
+        }
+        Debug.Log("Handler Stop");
+        float horizontal = Input.GetAxis("Horizontal");
+        float vertical = Input.GetAxis("Vertical");
+        //控制移动
+        if (horizontal != 0)
+        {
+            ICommand moveCommand = new MoveCommand(BaseObject, horizontal, BaseObject.CharacterImp.moveXSpeed, 1, BaseObject.Rigidbody2D.velocity.y);
+            moveCommand.Handle();
+        }
+        if (Input.GetKeyDown(KeyCode.J) && Dashable())
+        {
+            horizontal = horizontal > 0.0f ? 1.0f : horizontal;
+            horizontal = horizontal < 0.0f ? -1.0f : horizontal;
+            vertical = vertical > 0.0f ? 1.0f : vertical;
+            vertical = vertical < 0.0f ? -1.0f : vertical;
+            return new Dash(BaseObject, horizontal, vertical);
+        }
+        return null;
+    }
+    public new void Leave()
+    {
+        Debug.Log("Leave Stop");
+        base.Leave();
+    }
+    private bool Dashable()
+    {
+        Debug.Log("Dashable Stop");
+        Collider2D[] colls = new Collider2D[0];
+        Vector2 checkMin = new Vector2(BaseObject.Collider2D.bounds.center.x, BaseObject.Collider2D.bounds.center.y - BaseObject.Collider2D.bounds.extents.y);
+        Debug.Log("checkMin:" + checkMin + " groundCheckRadius:" + groundCheckRadius);
+        colls = Physics2D.OverlapCircleAll(checkMin, groundCheckRadius);
+        foreach (Collider2D coll in colls)
+        {
+            Debug.Log("coll" + coll.bounds.center);
+            IGround ground = coll.GetComponent<IGround>();
+            ISlider slider = coll.GetComponent<ISlider>();
+            if (ground != null || slider != null)
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+}
+class Dash : UnAttached, IState<ICharacter>
 {
     public float horizontal;
     public float vertical;
-    public override void Enter(Character character)
+    private float preGravityScale;
+    private IMoveCommand dashCommand;
+    private float dashStartTime;
+    public Dash(ICharacter character, float horizontal, float vertical) : base(character)
     {
-        base.Enter(character);
+        this.horizontal = horizontal;
+        this.vertical = vertical;
     }
-    public override State Handler(Character character)
+    public new void Enter()
     {
-        State state = base.Handler(character);
-        if (state != null)
-        {
-            return state;
-        }
-        // Debug.Log("OnGround.Handler");
-        horizontal = Input.GetAxis("Horizontal");
-        vertical = Input.GetAxis("Vertical");
-        if (horizontal == 0 && vertical == 0)
-        {
-            return new StandOnGround();
-        }
-        else if (vertical == 0 && horizontal != 0)
-        {
-            return new MoveOnGround();
-        }
-        return null;
+        base.Enter();
+        Debug.Log("Enter Dash");
+        //取消重力
+        preGravityScale = BaseObject.Rigidbody2D.gravityScale;
+        BaseObject.Rigidbody2D.gravityScale = 0;
+        //冲刺初始化
+        dashStartTime = Time.time;
+        dashCommand = new MoveCommand(BaseObject, horizontal, BaseObject.CharacterImp.dashXSpeed, vertical, BaseObject.CharacterImp.dashYSpeed);
+        //冲刺移动
+        dashCommand.Handle();
+        //冲刺动画
+        BaseObject.StartCoroutine(DashShowder());
     }
-    public override void Leave(Character character)
+    public new IState<ICharacter> Handler()
     {
-        base.Leave(character);
+        IState<ICharacter> baseHandler = base.Handler();
+        if (baseHandler != null)
+        {
+            return baseHandler;
+        }
+        Debug.Log("Handler Dash");
+        if (Time.time < dashStartTime + BaseObject.CharacterImp.dashTime)
+        {
+            return null;
+        }
+        return new Stop(BaseObject);
+    }
+    public new void Leave()
+    {
+        Debug.Log("Leave Dash");
+        //恢复重力
+        BaseObject.Rigidbody2D.gravityScale = preGravityScale;
+        base.Leave();
+    }
+    private IEnumerator DashShowder()
+    {
+        while (Time.time <= dashStartTime + BaseObject.CharacterImp.dashTime)
+        {
+            ShadowPool.instance.GetFromPool();
+            yield return new WaitForFixedUpdate();
+        }
     }
 }
-class StandOnGround : OnGround
-{
-    public Command stopMoveCommand;
-    public override void Enter(Character character)
-    {
-        base.Enter(character);
-        stopMoveCommand = new MoveCommand(0.0f, 0.0f, 0.0f, 0.0f);
-        stopMoveCommand.Handle(character);
-    }
-    public override State Handler(Character character)
-    {
-        State _state = base.Handler(character);
-        if (_state != null)
-        {
-            return _state;
-        }
-        return null;
-    }
-    public override void Leave(Character character)
-    {
-        base.Leave(character);
-    }
-}
-class MoveOnGround : OnGround
-{
-
-}
-// class Dash : State
-// {
-//     public float horizontal;
-//     public float vertical;
-//     public Command dashCommand;
-//     public override void Enter(Character character)
-//     {
-//         dashCommand = new MoveCommand(horizontal, character.DashLRSpeed, vertical, character.DashUDSpeed);
-//         dashCommand.Handle(character);
-//     }
-//     public override State Handler(Character character)
-//     {
-//         // 更新残影
-//         ShadowPool.instance.GetFromPool();
-//         return null;
-//     }
-//     public override void Leave(Character character)
-//     {
-
-//     }
-// }

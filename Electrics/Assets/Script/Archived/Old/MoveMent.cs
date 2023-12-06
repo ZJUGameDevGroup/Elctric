@@ -15,7 +15,7 @@ public class MoveMent : MonoBehaviour
     [Header("地面检测")]
     //检测地面
     public Transform groundCheck;
-    public LayerMask ground;
+    public LayerMask groundLayer;
     public float checkGroundRadius;
     [Header("Dash参数")]
     public float dashUDSpeed;
@@ -27,6 +27,7 @@ public class MoveMent : MonoBehaviour
     // public float dashSpeed;
     private bool dashable;
     [Header("Attach")]
+    public LayerMask attachLayer;
     [ReadOnly]
     public bool attachTo = false;
     public float checkRadius;
@@ -63,7 +64,7 @@ public class MoveMent : MonoBehaviour
         {
             Debug.Log("Z");
             Collider2D nearest;
-            Collider2D[] Items = Physics2D.OverlapCircleAll(transform.position, checkRadius, LayerMask.GetMask("ElecItem"));
+            Collider2D[] Items = Physics2D.OverlapCircleAll(transform.position, checkRadius, attachLayer);
             if (Items.Length > 0)
             {
                 Debug.Log("Has");
@@ -141,7 +142,7 @@ public class MoveMent : MonoBehaviour
     }
     private void FixedUpdate()
     {
-        isGround = Physics2D.OverlapCircle(groundCheck.position, checkGroundRadius, ground);
+        isGround = Physics2D.OverlapCircle(groundCheck.position, checkGroundRadius, groundLayer);
         if (isGround)
         {
             dashable = true;
@@ -164,6 +165,7 @@ public class MoveMent : MonoBehaviour
         verticalMove = Input.GetAxisRaw("Vertical");
         if (attachedObject.moveDirection == ElecItem.Direction.UD)
         {
+            Debug.Log("UD");
             newTranslate = new Vector3(0, verticalMove, 0);
             transform.Translate(newTranslate);
             attachedObject.transform.Translate(newTranslate);
@@ -177,6 +179,7 @@ public class MoveMent : MonoBehaviour
         }
         else
         {
+            Debug.Log("LR");
             newTranslate = new Vector3(horizontalMove, 0, 0);
             transform.Translate(newTranslate);
             attachedObject.transform.Translate(newTranslate);

@@ -3,12 +3,13 @@
 --- !u!78 &1
 TagManager:
   serializedVersion: 2
-  tags: []
+  tags:
+  - player
   layers:
   - Default
   - TransparentFX
   - Ignore Raycast
-  - EleItem
+  - 
   - Water
   - UI
   - 
@@ -40,4 +41,10 @@ TagManager:
   m_SortingLayers:
   - name: Default
     uniqueID: 0
+    locked: 0
+  - name: Back
+    uniqueID: 3249124963
+    locked: 0
+  - name: Front
+    uniqueID: 3166155913
     locked: 0

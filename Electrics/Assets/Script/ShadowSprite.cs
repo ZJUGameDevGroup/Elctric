@@ -21,7 +21,7 @@ public class ShadowSprite : MonoBehaviour
 
     private void OnEnable()
     {
-        player = GameObject.FindGameObjectWithTag("player").transform;
+        player = GameObject.FindGameObjectWithTag("Player").transform;
         thisSprite = GetComponent<SpriteRenderer>();
         playerSprite = player.GetComponent<SpriteRenderer>();
 
