@@ -9,7 +9,7 @@ public class CharacterImp : ScriptableObject
     public float dashTime;
     public float moveXSpeed;
 }
-public interface ICharacter : IMove, IForce, IElecPower<IElecUser<ICharacter>>, IAttachTo<IAttachedBy<ICharacter>>
+public interface ICharacter : IMoveable, IForcible, IElecPower<IElecUser<ICharacter>>, IAttachTo<IAttachedBy<ICharacter>>
 {
     Collider2D Collider2D
     {
@@ -112,8 +112,6 @@ class Character : MonoBehaviour, ICharacter
         }
     }
 }
-
-
 
 class UnAttached : IState<ICharacter>
 {

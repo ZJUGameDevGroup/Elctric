@@ -3,7 +3,7 @@ public enum Direction
 {
     UP, DOWN, LEFT, RIGHT
 }
-public interface ISlider : IElecUser<ICharacter>, IAttachedBy<ICharacter>, IMove
+public interface ISlider : IElecUser<ICharacter>, IAttachedBy<ICharacter>, IMoveable
 {
     Direction Direction { get; set; }
     BackWall BackWall { get; set; }

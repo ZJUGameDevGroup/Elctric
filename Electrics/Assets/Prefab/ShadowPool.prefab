@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1 &2992724365036541415
+--- !u!1 &4339694177397031069
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -8,8 +8,8 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 8192083634147642993}
-  - component: {fileID: 872985408142351379}
+  - component: {fileID: 2525459900528209678}
+  - component: {fileID: 6391951119762290190}
   m_Layer: 0
   m_Name: ShadowPool
   m_TagString: Untagged
@@ -17,13 +17,13 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &8192083634147642993
+--- !u!4 &2525459900528209678
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2992724365036541415}
+  m_GameObject: {fileID: 4339694177397031069}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -61.799675, y: -12.393183, z: -0.007719598}
@@ -32,17 +32,17 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &872985408142351379
+--- !u!114 &6391951119762290190
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2992724365036541415}
+  m_GameObject: {fileID: 4339694177397031069}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ee360b2e950024f42be32de2cce3c3f9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  shadowPrefab: {fileID: 7683848241459668446, guid: cf5cce2ec2e19694eb71a9b615b9de70, type: 3}
+  shadowPrefab: {fileID: 204781707789009946, guid: 42e8203494692ca4bba0d1dc7631a29d, type: 3}
   shadowCount: 10
