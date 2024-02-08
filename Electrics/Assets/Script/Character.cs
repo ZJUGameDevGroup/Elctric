@@ -9,6 +9,7 @@ public class CharacterImp : ScriptableObject
     public float dashTime;
     public float moveXSpeed;
 }
+
 public interface ICharacter : IMoveable, IForcible, IElecPower<IElecUser<ICharacter>>, IAttachTo<IAttachedBy<ICharacter>>
 {
     Collider2D Collider2D
@@ -384,6 +385,10 @@ class Attached : IState<ICharacter>
 }
 class Stop : UnAttached, IState<ICharacter>
 {
+    float dashXSpeed = 50;
+    float dashYSpeed =  50;
+    float dashTime = 0.17f;
+    float moveXSpeed = 15;
     public IMoveCommand stopMoveCommand;
     float groundCheckRadius = 0.1f;
     public Stop(ICharacter character) : base(character)
@@ -409,7 +414,7 @@ class Stop : UnAttached, IState<ICharacter>
         //øÿ÷∆“∆∂Ø
         if (horizontal != 0)
         {
-            ICommand moveCommand = new MoveCommand(BaseObject, horizontal, BaseObject.CharacterImp.moveXSpeed, 1, BaseObject.Rigidbody2D.velocity.y);
+            ICommand moveCommand = new MoveCommand(BaseObject, horizontal, moveXSpeed, 1, BaseObject.Rigidbody2D.velocity.y);
             moveCommand.Handle();
         }
         if (Input.GetKeyDown(KeyCode.J) && Dashable())
@@ -449,6 +454,10 @@ class Stop : UnAttached, IState<ICharacter>
 }
 class Dash : UnAttached, IState<ICharacter>
 {
+    float dashXSpeed = 50;
+    float dashYSpeed = 50;
+    float dashTime = 0.17f;
+    float moveXSpeed = 15;
     public float horizontal;
     public float vertical;
     private float preGravityScale;
@@ -468,7 +477,7 @@ class Dash : UnAttached, IState<ICharacter>
         BaseObject.Rigidbody2D.gravityScale = 0;
         //≥Â¥Ã≥ı ºªØ
         dashStartTime = Time.time;
-        dashCommand = new MoveCommand(BaseObject, horizontal, BaseObject.CharacterImp.dashXSpeed, vertical, BaseObject.CharacterImp.dashYSpeed);
+        dashCommand = new MoveCommand(BaseObject, horizontal, dashXSpeed, vertical,dashYSpeed);
         //≥Â¥Ã“∆∂Ø
         dashCommand.Handle();
         //≥Â¥Ã∂Øª≠
@@ -482,7 +491,7 @@ class Dash : UnAttached, IState<ICharacter>
             return baseHandler;
         }
         Debug.Log("Handler Dash");
-        if (Time.time < dashStartTime + BaseObject.CharacterImp.dashTime)
+        if (Time.time < dashStartTime + dashTime)
         {
             return null;
         }
@@ -497,7 +506,7 @@ class Dash : UnAttached, IState<ICharacter>
     }
     private IEnumerator DashShowder()
     {
-        while (Time.time <= dashStartTime + BaseObject.CharacterImp.dashTime)
+        while (Time.time <= dashStartTime + dashTime)
         {
             ShadowPool.instance.GetFromPool();
             yield return new WaitForFixedUpdate();
