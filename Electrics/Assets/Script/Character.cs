@@ -143,7 +143,7 @@ class UnAttached : IState<ICharacter>
         Debug.Log("Handler UnAttached");
         horizontal = Input.GetAxis("Horizontal");
         vertical = Input.GetAxis("Vertical");
-        if (Input.GetKeyDown(KeyCode.Z))
+        if (Input.GetKeyDown(KeyCode.Space))
         {
             IAttachedBy<ICharacter> attachedItem = FindAttachableItem();
             if (attachedItem != null)

@@ -14,5 +14,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CharacterImp
   dashXSpeed: 50
   dashYSpeed: 50
-  dashTime: 0.1
+  dashTime: 0.17
   moveXSpeed: 15
